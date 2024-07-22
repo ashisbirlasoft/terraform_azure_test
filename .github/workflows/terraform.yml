@@ -1,35 +1,68 @@
-name: Install Azure CLI and Run Terraform
+name: 'Terraform'
 
 on:
   push:
     branches:
-      - main  # Adjust as needed
+    - main
+  pull_request:
 
 jobs:
   terraform:
+    name: 'Terraform'
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
     runs-on: ubuntu-latest
-    
+    environment: dev
+
+    defaults:
+      run:
+        shell: bash
+
     steps:
-    - name: Checkout code
+    - name: Checkout
       uses: actions/checkout@v2
-      
-    - name: Install Azure CLI
+
+    - name: 'Terraform Format'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: 0.12.13
+        tf_actions_subcommand: 'fmt'
+        
+    - name: 'Install Azure CLI'
       run: |
         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
       
     - name: Verify Azure CLI installation
       run: az --version  # Check Azure CLI version
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
+        
+    - name: 'Terraform Init'
+      uses: hashicorp/terraform-github-actions@master
       with:
-        terraform_version: 1.0.0  # Specify the version of Terraform you want to use
-      
-    - name: Terraform Init
-      run: terraform init
-      
-    - name: Terraform Plan
-      run: terraform plan
-      
+        tf_actions_version: 0.12.13
+        tf_actions_subcommand: 'init'
+        #tf_actions_working_dir: "./terraform_azure_test"
+
+    - name: 'Terraform Validate'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: 0.12.13
+        tf_actions_subcommand: 'validate'
+        #tf_actions_working_dir: "./terraform_azure_test"
+        
+    - name: 'Terraform Plan'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: 0.12.13
+        tf_actions_subcommand: 'plan'
+        #tf_actions_working_dir: "./terraform_azure_test"
+
     - name: Terraform Apply
-      run: terraform apply -auto-approve
+      if: github.ref == 'refs/heads/main'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: 0.12.13
+        tf_actions_subcommand: 'apply'
+       # tf_actions_working_dir: "./terraform_azure_test"
