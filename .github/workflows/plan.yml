@@ -3,7 +3,8 @@ name: "Terraform-Plan-Infra-Plan"
 on:
   push:
     branches:
-      - FeatureBranch1
+      #- FeatureBranch1
+      - main
 
 jobs:
   terraform:
