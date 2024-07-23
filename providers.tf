@@ -12,9 +12,9 @@ terraform {
     }
   }
   cloud {
-    organization = "CloudQuickLabs"
+    organization = "azurevnet"
     workspaces {
-      name = "AzureLabs"
+      name = "AzureTerraformLabs"
     }
   }
 }
